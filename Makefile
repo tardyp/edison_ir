@@ -1,2 +1,2 @@
-test: src/mcu_main.c fakemcu.c
-	gcc -o test src/mcu_main.c fakemcu.c -Iinclude
+test: src/mcu_main.c fakemcu.c Makefile
+	gcc -o test src/mcu_main.c fakemcu.c -Iinclude -w
