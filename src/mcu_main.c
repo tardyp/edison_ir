@@ -1,5 +1,6 @@
 #include "mcu_api.h"
 #include "mcu_errno.h"
+#include <string.h>
 
 // Arduino Extension PIN = 3
 #define PORT 0
@@ -22,10 +23,9 @@ void enable(int value)
 	else
         pwm_disable(PORT);
 }
-int play_ir_code(char *codes, int len) {
-	mcu_delay(1);
-	unsigned long t0 = time_us();
-
+void play_ir_code(unsigned char *codes, int len) {
+	int i;
+	int bit;
     /* send start bit */
     enable(1);
     mcu_delay(START_PULSE);
@@ -36,9 +36,9 @@ int play_ir_code(char *codes, int len) {
     enable(0);
     mcu_delay(START_PAUSE2);
     /* send all bits of each bytes */
-    for(int i=0; i < len; i++){
+    for(i=0; i < len; i++){
         unsigned char byte = codes[i];
-        for(int bit=0; bit < 8; bit++){
+        for(bit=0; bit < 8; bit++){
             int bit_value = (byte >> bit) & 1;
             enable(1);
             mcu_delay(PULSE_LEN);
@@ -66,38 +66,48 @@ int fromhex(char c){
 	}
 	return -1;
 }
-int parse_ir_code(char *src, char *dst, int len)
+int parse_ir_code(unsigned char *src, unsigned char *dst, int len)
 {
 	int i;
 	int a, b;
-	if (len % 2 == 1)
+	if (len % 2 == 1) {
+    	debug_print(DBG_DEBUG, "mcu got buffer with bad len %d...\n", len);
 		return -1;
-
+	}
 	for(i = 0; i < len; i+=2)
 	{
 		a = fromhex(src[i]);
 		b = fromhex(src[i + 1]);
-		if (a < 0 || b < 0)
-			return -1;
+		if (a < 0 || b < 0) {
+			return i/2;
+		}
 		dst[i/2] = (a << 4) | b;
+	    debug_print(DBG_DEBUG, "%d\n", dst[i/2]);
 	}
-	return 0;
+	return len/2;
 }
 #define MAX_BUF 255
 unsigned char buf[MAX_BUF];
 
 void mcu_main() {
     int period = 1000000/PULSE_FREQ;
+    period *= 1000; // configure is in ns
+    debug_print(DBG_DEBUG, "mcu starting...\n");
 
     pwm_configure(PORT, period/2, period);
 	enable(0);
+    debug_print(DBG_DEBUG, "mcu starting loop...\n");
 	while (1) {
 		unsigned int len;
-		len = host_receive(buf, MAX_BUF);
 
-		if ((len >= 5) && (strncmp(buf, "IRCODE", 6) == 0)) {
-			if (parse_ir_code(buf + 6, buf, len - 6) == 0)
-				play_ir_code(buf, (len - 5)/2);
+		len = host_receive(buf, MAX_BUF);
+		if ((len >= 6) && (strncmp((char*)buf, "IRCODE", 6) == 0)) {
+	    	debug_print(DBG_DEBUG, "mcu got buf %d %s...\n", len, buf);
+			len = parse_ir_code(buf + 6, buf, len - 6);
+			if (len > 0) {
+				debug_print(DBG_DEBUG, "mcu playing code len %d...\n", len);
+				play_ir_code(buf, (len - 6)/2);
+			}
 		}
 	}
 }
