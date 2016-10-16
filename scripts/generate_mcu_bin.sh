@@ -1,6 +1,7 @@
 #!/bin/bash -e
 topdir=$PWD
-libdir=../lib/
+export PATH=$MCUSDK_PATH/toolchain/$MCUSDK_OS/i686-elf-gcc/bin:$PATH
+libdir=./lib/
 OUTPUT=intel_mcu
 MCUBIN_FILE=$OUTPUT.bin
 MCULIB_FILE=$libdir/$OUTPUT.a
@@ -14,7 +15,7 @@ LDFLAGS="-X -N --gc-section -X -N -Ttext 0xFF300000 -e __Start -static --no-unde
 OBJCOPY_FLAGS="-j .pshinit -j .builtin_fw -O binary -j .text -j .rodata -j .data -j .bss --set-section-flags .bss=alloc,load,contents"
 function generate_mcu_elf {
 	if [ -e $ELF_FILE ]; then rm $ELF_FILE;fi
-	i686-elf-ld -T $LDS_FILE $LDFLAGS -L"$GCCLIB_FILE" $MCULIB_FILE $1 -lc -o $ELF_FILE
+	i686-elf-ld -T $LDS_FILE $LDFLAGS -L"$GCCLIB_FILE" $MCULIB_FILE $* -lc -o $ELF_FILE
 }
 
 function binstring ()
@@ -32,7 +33,7 @@ function generate_mcu_bin {
 	i686-elf-objcopy $OBJCOPY_FLAGS $ELF_FILE $RAW_FILE
 	dd if=/dev/zero of=VRL bs=1 count=728
 	if [ "$MCUSDK_OS" = "darwin-x86_64" ]; then
-		binstring $((`stat -L -f %z $RAW_FILE`/4))
+		binstring $((`/usr/bin/stat -L -f %z $RAW_FILE`/4))
 	else
 		binstring $((`stat -L -c %s $RAW_FILE`/4))
 	fi
