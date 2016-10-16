@@ -37,22 +37,16 @@ void play_ir_code(struct cmd_buffer *cmd) {
         debug_print(DBG_DEBUG, "bad argument len\n");
         return;
     }
-    debug_print(DBG_DEBUG, "reading args\n");
-
     int PULSE_FREQ = cmd_read_u16(cmd);
-    debug_print(DBG_DEBUG, "reading args\n");
 
     int START_PULSE = cmd_read_u16(cmd);
     int START_PAUSE = cmd_read_u16(cmd);
-    debug_print(DBG_DEBUG, "reading args\n");
     int START_PULSE2 = cmd_read_u16(cmd);
     int START_PAUSE2 = cmd_read_u16(cmd);
-    debug_print(DBG_DEBUG, "reading args\n");
 
     int PULSE_LEN = cmd_read_u16(cmd);
     int PAUSE_HIGH = cmd_read_u16(cmd);
     int PAUSE_LOW = cmd_read_u16(cmd);
-    debug_print(DBG_DEBUG, "reading args\n");
     if (PULSE_FREQ == 0){
         debug_print(DBG_DEBUG, "PULSE_FREQ is 0!\n");
         return;
@@ -61,7 +55,6 @@ void play_ir_code(struct cmd_buffer *cmd) {
     int period = 1000000/PULSE_FREQ;
     period *= 1000; // configure is in ns
 
-    debug_print(DBG_DEBUG, "configure %d \n", period);
     pwm_configure(PORT, period/2, period);
 	enable(0);
 	debug_print(DBG_DEBUG, "mcu playing ir code of len %d\n", cmd->len);
