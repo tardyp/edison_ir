@@ -1,4 +1,7 @@
 #!/bin/bash -e
+
+# this is the script from SDK fixed to allow several files to be linked together
+
 topdir=$PWD
 export PATH=$MCUSDK_PATH/toolchain/$MCUSDK_OS/i686-elf-gcc/bin:$PATH
 libdir=./lib/
