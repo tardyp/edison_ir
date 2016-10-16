@@ -45,6 +45,20 @@ def create_cmd(temperature, ventilation, mode, powerful, eco, on):
     return make_header() + "".join(["%02X" % i for i in buf])
 
 
+def run_cmd(temperature, ventilation, mode, powerful, eco, on):
+    # we import here to be able to run on host
+    import mraa
+    buf = create_cmd(temperature, ventilation, mode, powerful, eco, on)
+    # mraa will make sure the Pwm is configured properly
+    x = mraa.Pwm(3)
+    x.period_us(10)
+    x.pulsewidth_us(5)
+    x.enable(True)
+    with open("/dev/ttymcu0", "w") as f:
+        f.write("IRCODE" + buf + "\n")
+    x.enable(False)
+
+
 def mode(s):
     return {"HOT": 3, "COLD": 4, "HUM": 5}[s]
 
@@ -65,4 +79,4 @@ if __name__ == "__main__":
     parser.add_argument('--on', action="store_true", default=False,
                         help='enable')
     args = parser.parse_args()
-    print create_cmd(args.temperature, args.ventilation, args.mode, args.powerful, args.eco, args.on)
+    run_cmd(args.temperature, args.ventilation, args.mode, args.powerful, args.eco, args.on)

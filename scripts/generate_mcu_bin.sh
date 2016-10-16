@@ -15,6 +15,7 @@ LDFLAGS="-X -N --gc-section -X -N -Ttext 0xFF300000 -e __Start -static --no-unde
 OBJCOPY_FLAGS="-j .pshinit -j .builtin_fw -O binary -j .text -j .rodata -j .data -j .bss --set-section-flags .bss=alloc,load,contents"
 function generate_mcu_elf {
 	if [ -e $ELF_FILE ]; then rm $ELF_FILE;fi
+	echo i686-elf-ld -T $LDS_FILE $LDFLAGS -L"$GCCLIB_FILE" $MCULIB_FILE $* -lc -o $ELF_FILE
 	i686-elf-ld -T $LDS_FILE $LDFLAGS -L"$GCCLIB_FILE" $MCULIB_FILE $* -lc -o $ELF_FILE
 }
 
@@ -46,5 +47,5 @@ function generate_mcu_bin {
 	rm $RAW_FILE
 }
 
-generate_mcu_elf $1
+generate_mcu_elf $*
 generate_mcu_bin

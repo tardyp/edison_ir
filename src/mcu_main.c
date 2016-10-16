@@ -32,7 +32,6 @@ int parse_hexbuf(unsigned char *src, unsigned char *dst, int len)
 			return i/2;
 		}
 		dst[i/2] = (a << 4) | b;
-	    debug_print(DBG_DEBUG, "%d\n", dst[i/2]);
 	}
 	return len/2;
 }
