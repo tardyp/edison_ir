@@ -4,6 +4,25 @@ base_cmd = [
     0x0, 0x2, 0x0, 0x3, 0x0, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1,
     0x0, 0x0, 0]
 
+PULSE_FREQ = 38000
+
+START_PULSE = 30600
+START_PAUSE = 51100
+START_PULSE2 = 3356
+START_PAUSE2 = 1723
+
+PULSE_LEN = 430
+PAUSE_HIGH = 1247
+PAUSE_LOW = 430
+
+
+def make_header():
+    ret = ""
+    for i in [PULSE_FREQ, START_PULSE, START_PAUSE, START_PULSE2,
+              START_PAUSE2, PULSE_LEN, PAUSE_HIGH, PAUSE_LOW]:
+        ret += "%04X" % i
+    return ret
+
 
 def create_cmd(temperature, ventilation, mode, powerful, eco, on):
     buf = base_cmd[:]
@@ -23,10 +42,12 @@ def create_cmd(temperature, ventilation, mode, powerful, eco, on):
 
     c = 0xff ^ (c - 1)
     buf[27] = c
-    return "".join(["%02X" % i for i in buf])
+    return make_header() + "".join(["%02X" % i for i in buf])
+
 
 def mode(s):
     return {"HOT": 3, "COLD": 4, "HUM": 5}[s]
+
 
 if __name__ == "__main__":
     import argparse

@@ -2,7 +2,7 @@ CROSSCOMPILE=$(MCUSDK_PATH)/toolchain/$(MCUSDK_OS)/i686-elf-gcc/bin/i686-elf-
 CC := $(CROSSCOMPILE)gcc
 CPPFLAGS :=  -Iinclude
 
-SRC = src/mcu_main.c
+SRC = src/mcu_main.c src/ircode.c
 FAKESRC = testing/fakemcu.c
 OBJ = $(patsubst %.c,%.o,$(SRC))
 
